@@ -115,7 +115,7 @@ resource "aws_instance" "db_nodes" {
   subnet_id                   = element(aws_subnet.web_subnet.*.id, count.index + 1)
   associate_public_ip_address = "false"
   vpc_security_group_ids      = [aws_security_group.web.id]
-  #key_name                    = var.pub_key
+  key_name                    = var.pub_key
   
   user_data = <<-EOF
               #!/bin/bash
@@ -126,94 +126,18 @@ resource "aws_instance" "db_nodes" {
               chmod 644 /etc/ssh/ca-key.pub
               echo "TrustedUserCAKeys /etc/ssh/ca-key.pub" >> /etc/ssh/sshd_config
               sudo systemctl restart sshd.service
-              #DB part
               apt-get update
               apt-get install -y mysql-server
-
-              #
               sudo tee /etc/mysql/myql.conf.d/mysqld.cnf > /dev/null <<EOT
-# The MySQL database server configuration file.
-#
-# One can use all long options that the program supports.
-# Run program with --help to get a list of available options and with
-# --print-defaults to see which it would actually understand and use.
-#
-# For explanations see
-# http://dev.mysql.com/doc/mysql/en/server-system-variables.html
-
-# Here is entries for some specific programs
-# The following values assume you have at least 32M ram
-
-[mysqld]
-#
-# * Basic Settings
-#
-user            = mysql
-# pid-file      = /var/run/mysqld/mysqld.pid
-# socket        = /var/run/mysqld/mysqld.sock
-# port          = 3306
-# datadir       = /var/lib/mysql
-
-
-# If MySQL is running as a replication slave, this should be
-# changed. Ref https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_tmpdir
-# tmpdir                = /tmp
-#
-# Instead of skip-networking the default is now to listen only on
-# localhost which is more compatible and is not less secure.
-bind-address            = 0.0.0.0
-mysqlx-bind-address     = 127.0.0.1
-#
-# * Fine Tuning
-#
-key_buffer_size         = 16M
-# max_allowed_packet    = 64M
-# thread_stack          = 256K
-
-# thread_cache_size       = -1
-
-# This replaces the startup script and checks MyISAM tables if needed
-# the first time they are touched
-myisam-recover-options  = BACKUP
-
-# max_connections        = 151
-
-# table_open_cache       = 4000
-
-#
-# * Logging and Replication
-#
-# Both location gets rotated by the cronjob.
-#
-# Log all queries
-# Be aware that this log type is a performance killer.
-# general_log_file        = /var/log/mysql/query.log
-# general_log             = 1
-#
-# Error log - should be very few entries.
-#
-log_error = /var/log/mysql/error.log
-#
-# Here you can see queries with especially long duration
-# slow_query_log                = 1
-# slow_query_log_file   = /var/log/mysql/mysql-slow.log
-# long_query_time = 2
-# log-queries-not-using-indexes
-#
-# The following can be used as easy to replay backup logs or for replication.
-# note: if you are setting up a replication slave, see README.Debian about
-#       other settings you may need to change.
-# server-id             = 1
-# log_bin                       = /var/log/mysql/mysql-bin.log
-# binlog_expire_logs_seconds    = 2592000
-max_binlog_size   = 100M
-# binlog_do_db          = include_database_name
-# binlog_ignore_db      = include_database_name
-EOT
-
-
-              #echo "[mysqld]" >> /etc/mysql/my.cnf
-              #echo "bind-address=0.0.0.0" >> /etc/mysql/my.cnf
+                [mysqld]
+                user            = mysql
+                bind-address            = 0.0.0.0
+                mysqlx-bind-address     = 127.0.0.1
+                key_buffer_size         = 16M
+                myisam-recover-options  = BACKUP
+                log_error = /var/log/mysql/error.log
+                max_binlog_size   = 100M
+              EOT
               echo "CREATE USER 'boundary'@'%' IDENTIFIED WITH mysql_native_password BY 'boundary1234!';" > /home/ubuntu/demo.sql
               echo "GRANT ALL PRIVILEGES ON *.* TO 'boundary'@'%' WITH GRANT OPTION;" >> /home/ubuntu/demo.sql
               sudo mysql < /home/ubuntu/demo.sql
