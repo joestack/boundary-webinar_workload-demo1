@@ -1,68 +1,36 @@
-# data "terraform_remote_state" "boundary" {
-#   backend = "remote"
-
-#   config = {
-#     organization = var.tfc_state_org
-#     workspaces = {
-#       name = var.rs_service_boundary
-#     }
-#   }
-# }
-
-# data "terraform_remote_state" "vault" {
-#   backend = "remote"
-
-#   config = {
-#     organization = var.tfc_state_org
-#     workspaces = {
-#       name = var.rs_service_vault
-#     }
-#   }
-# }
-#
-# locals {
-#   priv_key              = base64decode(var.pri_key)
-#   boundary_cluster_addr = data.terraform_remote_state.boundary.outputs.boundary_cluster
-#   worker_token          = data.terraform_remote_state.boundary.outputs.activation_token
-#   demo_org_id           = data.terraform_remote_state.boundary.outputs.demo_org_id
-#   demo_project_id       = data.terraform_remote_state.boundary.outputs.demo_project_id
-#   cred_store_static     = data.terraform_remote_state.boundary.outputs.cred_store_static
-#   cred_store_vault      = data.terraform_remote_state.boundary.outputs.cred_store_vault
-#   vault_ca_pub_key      = data.terraform_remote_state.vault.outputs.ca_public_key
-#   vault_boundary_token  = data.terraform_remote_state.vault.outputs.vault_boundary_token
-# }
-
-
-data "terraform_remote_state" "platform_services" {
+data "terraform_remote_state" "hcp" {
   backend = "remote"
 
   config = {
     organization = var.tfc_state_org
     workspaces = {
-      name = var.rs_platform_services
+      name = var.rs_platform_hcp
     }
   }
 }
 
 locals {
   priv_key              = base64decode(var.pri_key)
-  boundary_cluster_addr = data.terraform_remote_state.platform_services.outputs.boundary_cluster
-  worker_token          = data.terraform_remote_state.platform_services.outputs.activation_token
-  demo_org_id           = data.terraform_remote_state.platform_services.outputs.demo_org_id
-  demo_project_id       = data.terraform_remote_state.platform_services.outputs.demo_project_id
-  cred_store_static     = data.terraform_remote_state.platform_services.outputs.cred_store_static
-  cred_store_vault      = data.terraform_remote_state.platform_services.outputs.cred_store_vault
-  vault_ca_pub_key      = data.terraform_remote_state.platform_services.outputs.ca_public_key
-  vault_boundary_token  = data.terraform_remote_state.platform_services.outputs.vault_boundary_token
+  vault_cluster_addr    = data.terraform_remote_state.hcp.outputs.vault_cluster_public_url
+  vault_namespace       = data.terraform_remote_state.hcp.outputs.vault_namespace
+  vault_admin_token     = data.terraform_remote_state.hcp.outputs.vault_admin_token
+  boundary_cluster_addr = data.terraform_remote_state.hcp.outputs.boundary_cluster_url
+  worker_token          = boundary_worker.controller_led.controller_generated_activation_token
+  vault_ca_pub_key      = tls_private_key.signing-key.public_key_openssh
+  
+  #demo_project_id       = boundary_scope.project.id
+  
+  # boundary_cluster_addr = data.terraform_remote_state.platform_services.outputs.boundary_cluster
+  # worker_token          = data.terraform_remote_state.platform_services.outputs.activation_token
+  # demo_org_id           = data.terraform_remote_state.platform_services.outputs.demo_org_id
+  # demo_project_id       = data.terraform_remote_state.platform_services.outputs.demo_project_id
+  # cred_store_static     = data.terraform_remote_state.platform_services.outputs.cred_store_static
+  # cred_store_vault      = data.terraform_remote_state.platform_services.outputs.cred_store_vault
+  # vault_ca_pub_key      = data.terraform_remote_state.platform_services.outputs.ca_public_key
+  # vault_boundary_token  = data.terraform_remote_state.platform_services.outputs.vault_boundary_token
 }
 
 
-provider "boundary" {
-  addr                   = local.boundary_cluster_addr
-  auth_method_login_name = var.org_username
-  auth_method_password   = var.org_password
-  scope_id               = local.demo_org_id
-}
 
 provider "aws" {
   region = var.aws_region
@@ -90,7 +58,7 @@ data "aws_ami" "ubuntu" {
 
 
 resource "aws_eip" "nat_gateway" {
-  vpc = true
+  #vpc = true
 }
 
 resource "aws_nat_gateway" "nat" {
