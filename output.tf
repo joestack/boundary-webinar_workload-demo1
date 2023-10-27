@@ -17,3 +17,25 @@ output "web_node_ips" {
 output "vpc_id" {
   value = aws_vpc.hashicorp_vpc.id
 }
+
+output "ca_public_key" {
+  value = tls_private_key.signing-key.public_key_openssh
+}
+
+output "vault_boundary_token" {
+  value = vault_token.boundary-credentials-store-token.client_token
+  sensitive = true
+}
+
+output "vault_admin_token" {
+  value = local.vault_admin_token
+}
+
+output "activation_token" {
+  value = boundary_worker.controller_led.controller_generated_activation_token
+}
+
+output "boundary_cluster" {
+  value = local.boundary_cluster_addr
+}
+

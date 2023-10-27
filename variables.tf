@@ -1,28 +1,35 @@
-variable "org_username" {
-  description = "Terraform boundary_provider Username"
+variable "tfc_state_org" {
+  description = "TFC Organization where to access remote_state from"
+  default = "JoeStack"
 }
 
-variable "org_password" {
+variable "rs_platform_hcp" {
+  description = "TFC Workspace where to consume outputs from (cluster_url)"
+  default = "boundary-webinar_platform-hcp"
+}
+
+variable "boundary_global_username" {
+  description = "Terraform boundary_provider Username"
+  }
+
+variable "boundary_global_password" {
   description = "Terraform boundary_provider Password"
 }
 
-variable "tfc_state_org" {
-  description = "TFC Organization where to access remote_state from"
+variable "boundary_project_username" {
+  description = "Terraform boundary_provider Username"
 }
 
-# variable "rs_service_vault" {
-#   description = "TFC Workspace where to consume outputs from (cluster_url, scope_ids, worker_token)"
-#   default     = "boundary-webinar_service-01-vault"
-# }
+variable "boundary_project_password" {
+  description = "Terraform boundary_provider Password"
+}
 
-# variable "rs_service_boundary" {
-#   description = "TFC Workspace where to consume outputs from (cluster_url, scope_ids, worker_token)"
-#   default     = "boundary-webinar_service-02-boundary"
-# }
+variable "vault_adm_user" {
+  description = "Additinal non-root Username to access Vault"
+}
 
-variable "rs_platform_services" {
-  description = "TFC Workspace where to consume outputs from (cluster_url, scope_ids, worker_token)"
-  default     = "boundary-webinar_platform-services"
+variable "vault_adm_password" {
+  description = "non-root Password to access Vault" 
 }
 
 variable "aws_region" {

@@ -1,0 +1,4 @@
+{
+  "policies": ["${policy}"],
+  "password": "${password}"
+}

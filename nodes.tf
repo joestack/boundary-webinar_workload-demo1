@@ -51,25 +51,7 @@ resource "aws_instance" "web_nodes" {
 }
 
 
-resource "boundary_host_catalog_static" "catalog" {
-  name        = "webnodes-catalog"
-  description = "My webnodes catalog"
-  scope_id    = local.demo_project_id
-}
 
-resource "boundary_host_set_static" "set" {
-  type            = "static"
-  name            = "webnodes-host-set"
-  host_catalog_id = boundary_host_catalog_static.catalog.id
-  host_ids        = boundary_host_static.servers.*.id
-}
-resource "boundary_host_static" "servers" {
-  count           = var.web_node_count
-  type            = "static"
-  name            = aws_instance.web_nodes.*.tags[count.index]["Name"]
-  host_catalog_id = boundary_host_catalog_static.catalog.id
-  address         = element(aws_instance.web_nodes.*.private_ip, count.index)
-}
 
 # resource "boundary_credential_store_static" "example" {
 #   name        = "boundary-credential-store"
@@ -77,32 +59,7 @@ resource "boundary_host_static" "servers" {
 #   scope_id    = local.demo_project_id
 # }
 
-resource "boundary_credential_ssh_private_key" "example" {
-  name                = "webnodes"
-  description         = "SSH Private Key for webnodes"
-  #credential_store_id = boundary_credential_store_static.example.id
-  credential_store_id = local.cred_store_static
-  username            = "ubuntu"
-  private_key         = local.priv_key
-  #private_key_passphrase = "optional-passphrase" # change to the passphrase of the Private Key if required
-}
 
-resource "boundary_target" "ssh_hosts" {
-  name                     = "ssh-static-injection-webnodes"
-  description              = "ssh webnode targets"
-  type                     = "ssh"
-  default_port             = "22"
-  scope_id                 = local.demo_project_id
-  ingress_worker_filter    = "\"worker1\" in \"/tags/type\""
-  enable_session_recording = false
-  #storage_bucket_id                          = boundary_storage_bucket.session-storage.id
-  host_source_ids = [
-    boundary_host_set_static.set.id
-  ]
-  injected_application_credential_source_ids = [
-    boundary_credential_ssh_private_key.example.id
-  ]
-}
 
 
 ## next use case dynamic ssh via vault
@@ -148,25 +105,6 @@ resource "aws_instance" "db_nodes" {
   }
 }
 
-resource "boundary_host_catalog_static" "catalog_db" {
-  name        = "db-catalog"
-  description = "My dbnodes catalog"
-  scope_id    = local.demo_project_id
-}
-
-resource "boundary_host_set_static" "set_db" {
-  type            = "static"
-  name            = "dbnodes-host-set"
-  host_catalog_id = boundary_host_catalog_static.catalog_db.id
-  host_ids        = boundary_host_static.servers_db.*.id
-}
-resource "boundary_host_static" "servers_db" {
-  count           = var.web_node_count
-  type            = "static"
-  name            = aws_instance.db_nodes.*.tags[count.index]["Name"]
-  host_catalog_id = boundary_host_catalog_static.catalog_db.id
-  address         = element(aws_instance.db_nodes.*.private_ip, count.index)
-}
 
 
 # //Credential store for Vault
@@ -180,35 +118,5 @@ resource "boundary_host_static" "servers_db" {
 # }
 
 
-resource "boundary_credential_library_vault_ssh_certificate" "vault" {
-  name                = "certificates-library"
-  description         = "Vault CA to grant access to dbnodes"
-  #credential_store_id = boundary_credential_store_vault.vault_cred_store_dyn.id
-  credential_store_id = local.cred_store_vault
-  path                = "ssh-client-signer/sign/boundary-client"
-  username            = "ubuntu"
-  key_type            = "ecdsa"
-  key_bits            = 521
-  extensions          = {
-    permit-pty = ""
-  }
-}
 
-
-resource "boundary_target" "ssh_hosts_db" {
-  name                     = "ssh-dynamic-injection-dbnodes"
-  description              = "ssh dbnode targets"
-  type                     = "ssh"
-  default_port             = "22"
-  scope_id                 = local.demo_project_id
-  ingress_worker_filter    = "\"worker1\" in \"/tags/type\""
-  enable_session_recording = false
-  #storage_bucket_id                          = boundary_storage_bucket.session-storage.id
-  host_source_ids = [
-    boundary_host_set_static.set_db.id
-  ]
-  injected_application_credential_source_ids = [
-    boundary_credential_library_vault_ssh_certificate.vault.id
-  ]
-}
 
