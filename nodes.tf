@@ -85,7 +85,7 @@ resource "aws_instance" "db_nodes" {
               sudo systemctl restart sshd.service
               apt-get update
               apt-get install -y mysql-server
-              sudo tee /etc/mysql/myql.conf.d/mysqld.cnf > /dev/null <<EOT
+              sudo tee /etc/mysql/mysql.conf.d/mysqld.cnf > /dev/null <<EOT
                 [mysqld]
                 user            = mysql
                 bind-address            = 0.0.0.0
