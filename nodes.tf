@@ -95,9 +95,11 @@ resource "aws_instance" "db_nodes" {
                 log_error = /var/log/mysql/error.log
                 max_binlog_size   = 100M
               EOT
-              echo "CREATE USER 'boundary'@'%' IDENTIFIED WITH mysql_native_password BY 'boundary1234!';" > /home/ubuntu/demo.sql
+              #echo "CREATE USER 'boundary'@'%' IDENTIFIED WITH mysql_native_password BY 'boundary1234!';" > /home/ubuntu/demo.sql
+              echo "CREATE USER 'boundary'@'%' IDENTIFIED WITH caching_sha2_password BY 'boundary1234!';" > /home/ubuntu/demo.sql
               echo "GRANT ALL PRIVILEGES ON *.* TO 'boundary'@'%' WITH GRANT OPTION;" >> /home/ubuntu/demo.sql
               sudo mysql < /home/ubuntu/demo.sql
+              systemctl restart mysql
               EOF
   
   tags = {
