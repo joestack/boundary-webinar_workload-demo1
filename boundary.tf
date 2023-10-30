@@ -222,3 +222,20 @@ resource "boundary_credential_username_password" "db" {
   username            = "boundary"
   password            = "boundary1234!"
 }
+
+resource "boundary_target" "mysql_hosts" {
+  name                     = "mysql"
+  description              = "mysql target"
+  type                     = "tcp"
+  default_port             = "3306"
+  scope_id                 = boundary_scope.project.id
+  ingress_worker_filter    = "\"worker1\" in \"/tags/type\""
+  enable_session_recording = false
+  #storage_bucket_id                          = boundary_storage_bucket.session-storage.id
+  host_source_ids = [
+    boundary_host_set_static.set_db.id
+  ]
+  injected_application_credential_source_ids = [
+    boundary_credential_username_password.db.id
+  ]
+}
