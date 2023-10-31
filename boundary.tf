@@ -26,6 +26,20 @@ resource "boundary_scope" "org" {
   auto_create_default_role = true
 }
 
+resource "boundary_scope" "project" {
+  name                   = "Boundary Webinar"
+  description            = "Boundary Project within Webinar's Org scope!"
+  scope_id               = boundary_scope.org.id
+  auto_create_admin_role = true
+}
+
+resource "boundary_worker" "controller_led" {
+  scope_id    = boundary_scope.org.id
+  name        = "worker 1"
+  description = "self managed worker with controller led auth"
+}
+
+
 resource "boundary_auth_method" "password" {
   scope_id = boundary_scope.org.id
   type     = "password"
@@ -44,12 +58,6 @@ resource "boundary_user" "user" {
   scope_id    = boundary_scope.org.id
 }
 
-resource "boundary_scope" "project" {
-  name                   = "Boundary Webinar"
-  description            = "Boundary Project within Webinar's Org scope!"
-  scope_id               = boundary_scope.org.id
-  auto_create_admin_role = true
-}
 
 resource "boundary_role" "project_admin" {
   name          = "project_admin"
@@ -59,13 +67,10 @@ resource "boundary_role" "project_admin" {
   scope_id      = boundary_scope.project.id
 }
 
-resource "boundary_worker" "controller_led" {
-  scope_id    = boundary_scope.org.id
-  name        = "worker 1"
-  description = "self managed worker with controller led auth"
-}
 
-//Credential store Static
+
+
+//Credential store Static SSH private Key
 resource "boundary_credential_store_static" "example" {
   name        = "boundary-credential-store"
   description = "Internal Static Credential Store!"
@@ -75,14 +80,13 @@ resource "boundary_credential_store_static" "example" {
 resource "boundary_credential_ssh_private_key" "example" {
   name                = "webnodes"
   description         = "SSH Private Key for webnodes"
-  #credential_store_id = boundary_credential_store_static.example.id
   credential_store_id = boundary_credential_store_static.example.id
   username            = "ubuntu"
   private_key         = local.priv_key
   #private_key_passphrase = "optional-passphrase" # change to the passphrase of the Private Key if required
 }
 
-//Credential store Vault
+//Credential store Vault SSH Signer
 resource "boundary_credential_store_vault" "vault_cred_store_dyn" {
   name        = "vault-credential-store"
   description = "Vault Dynamic Credential Store"
@@ -106,23 +110,25 @@ resource "boundary_credential_library_vault_ssh_certificate" "vault" {
   }
 }
 
-
-resource "boundary_target" "ssh_hosts" {
-  name                     = "ssh-static-injection-webnodes"
-  description              = "ssh webnode targets"
-  type                     = "ssh"
-  default_port             = "22"
-  scope_id                 = boundary_scope.project.id
-  ingress_worker_filter    = "\"worker1\" in \"/tags/type\""
-  enable_session_recording = false
-  #storage_bucket_id                          = boundary_storage_bucket.session-storage.id
-  host_source_ids = [
-    boundary_host_set_static.set.id
-  ]
-  injected_application_credential_source_ids = [
-    boundary_credential_ssh_private_key.example.id
-  ]
+//Credential store mysql
+resource "boundary_credential_store_static" "db" {
+  name        = "db-credential-store"
+  description = "Internal Static Credential Store for DB account!"
+  scope_id    = boundary_scope.project.id
 }
+
+resource "boundary_credential_username_password" "db" {
+  name                = "DB Credentials"
+  description         = "My first username password credential!"
+  credential_store_id = boundary_credential_store_static.db.id
+  #credential_store_id = boundary_credential_store_static.example.id
+  username            = "boundary"
+  password            = "boundary1234!"
+}
+
+// HOST CATALOGS
+
+#WEBNODES
 
 resource "boundary_host_catalog_static" "catalog" {
   name        = "webnodes-catalog"
@@ -144,24 +150,7 @@ resource "boundary_host_static" "servers" {
   address         = element(aws_instance.web_nodes.*.private_ip, count.index)
 }
 
-
-
-resource "boundary_target" "ssh_hosts_db" {
-  name                     = "ssh-dynamic-injection-dbnodes"
-  description              = "ssh dbnode targets"
-  type                     = "ssh"
-  default_port             = "22"
-  scope_id                 = boundary_scope.project.id
-  ingress_worker_filter    = "\"worker1\" in \"/tags/type\""
-  enable_session_recording = false
-  #storage_bucket_id       = boundary_storage_bucket.session-storage.id
-  host_source_ids = [
-    boundary_host_set_static.set_db.id
-  ]
-  injected_application_credential_source_ids = [
-    boundary_credential_library_vault_ssh_certificate.vault.id
-  ]
-}
+#DBNODES
 
 resource "boundary_host_catalog_static" "catalog_db" {
   name        = "db-catalog"
@@ -186,7 +175,8 @@ resource "boundary_host_static" "servers_db" {
 
 
 
-# new
+# DB-USER 
+# FIXME: fine grane access to mysql nodes only
 resource "boundary_account_password" "db-user" {
   auth_method_id = boundary_auth_method.password.id
   login_name = "db-user"
@@ -208,20 +198,40 @@ resource "boundary_role" "db_admin" {
   scope_id      = boundary_scope.project.id
 }
 
-//Credential store Static
-resource "boundary_credential_store_static" "db" {
-  name        = "db-credential-store"
-  description = "Internal Static Credential Store for DB account!"
-  scope_id    = boundary_scope.project.id
+// TARGETS
+
+resource "boundary_target" "ssh_hosts" {
+  name                     = "ssh-static-injection-webnodes"
+  description              = "ssh webnode targets"
+  type                     = "ssh"
+  default_port             = "22"
+  scope_id                 = boundary_scope.project.id
+  ingress_worker_filter    = "\"worker1\" in \"/tags/type\""
+  enable_session_recording = false
+  #storage_bucket_id                          = boundary_storage_bucket.session-storage.id
+  host_source_ids = [
+    boundary_host_set_static.set.id
+  ]
+  injected_application_credential_source_ids = [
+    boundary_credential_ssh_private_key.example.id
+  ]
 }
 
-resource "boundary_credential_username_password" "db" {
-  name                = "DB Credentials"
-  description         = "My first username password credential!"
-  credential_store_id = boundary_credential_store_static.db.id
-  #credential_store_id = boundary_credential_store_static.example.id
-  username            = "boundary"
-  password            = "boundary1234!"
+resource "boundary_target" "ssh_hosts_db" {
+  name                     = "ssh-dynamic-injection-dbnodes"
+  description              = "ssh dbnode targets"
+  type                     = "ssh"
+  default_port             = "22"
+  scope_id                 = boundary_scope.project.id
+  ingress_worker_filter    = "\"worker1\" in \"/tags/type\""
+  enable_session_recording = false
+  #storage_bucket_id       = boundary_storage_bucket.session-storage.id
+  host_source_ids = [
+    boundary_host_set_static.set_db.id
+  ]
+  injected_application_credential_source_ids = [
+    boundary_credential_library_vault_ssh_certificate.vault.id
+  ]
 }
 
 resource "boundary_target" "mysql_hosts" {

@@ -53,20 +53,7 @@ resource "aws_instance" "web_nodes" {
   }
 }
 
-
-
-
-# resource "boundary_credential_store_static" "example" {
-#   name        = "boundary-credential-store"
-#   description = "Internal Static Credential Store!"
-#   scope_id    = local.demo_project_id
-# }
-
-
-
-
 ## next use case dynamic ssh via vault
-
 
 resource "aws_instance" "db_nodes" {
   count                       = var.db_node_count
@@ -109,19 +96,3 @@ resource "aws_instance" "db_nodes" {
     Name = format("db-%02d", count.index + 1)
   }
 }
-
-
-
-# //Credential store for Vault
-# resource "boundary_credential_store_vault" "vault_cred_store_dyn" {
-#   name        = "vault-credential-store"
-#   description = "Vault Dynamic Credential Store"
-#   address     = local.vault_cluster_addr
-#   token       = local.vault_boundary_token
-#   namespace   = local.vault_namespace
-#   scope_id    = local.demo_project_id
-# }
-
-
-
-
