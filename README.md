@@ -1,6 +1,6 @@
-# boundary-webinar_workload-demo-01
+# boundary-webinar_workload-demo1
 
-This repo contains the Boundary use case workload that consumes the Vault and Boundary platform/service(s).
+This repo contains the Boundary use case workload that consumes the Vault and Boundary platform.
 
 It generates a bunch of webnodes that can be accessed via Boundary based on a static secret (private key)
 
@@ -8,11 +8,13 @@ and..
 
 It generates a bunch of dbnodes that can be accessed via Boundary based on a Vault dynamic secret (SSH CA signing) 
 
+and..
 
-The final workload/demo is stacked upon 3 layers.
+It generates a bunch of mysql DBs that can be accessed via Boundary based on static credentials.
 
-1st layer provides the required **platform** environment
 
-2nd layer provides and configure the required **platform/services**
+The final workload/demo is stacked upon 2 layers.
 
-3rd layer provides the the final **workload** and consumes the underlying platform/services
+1st layer provides the required **platform** environments
+
+2nd layer provides and configure the required **platform/services** and the final **workload**
