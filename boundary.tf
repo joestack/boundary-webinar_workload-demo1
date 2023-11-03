@@ -122,8 +122,8 @@ resource "boundary_credential_username_password" "db" {
   description         = "My first username password credential!"
   credential_store_id = boundary_credential_store_static.db.id
   #credential_store_id = boundary_credential_store_static.example.id
-  username            = "boundary"
-  password            = "boundary1234!"
+  username            = var.mysql_user
+  password            = var.mysql_password
 }
 
 // HOST CATALOGS
@@ -177,26 +177,26 @@ resource "boundary_host_static" "servers_db" {
 
 # DB-USER 
 # FIXME: fine grane access to mysql nodes only
-resource "boundary_account_password" "db-user" {
-  auth_method_id = boundary_auth_method.password.id
-  login_name = "db-user"
-  password   = "db-password1234"
-}
+# resource "boundary_account_password" "db-user" {
+#   auth_method_id = boundary_auth_method.password.id
+#   login_name = "db-user"
+#   password   = "db-password1234"
+# }
 
-resource "boundary_user" "db-user" {
-  name        = "db-user"
-  description = "db-user's user resource"
-  account_ids = [boundary_account_password.db-user.id]
-  scope_id    = boundary_scope.org.id
-}
+# resource "boundary_user" "db-user" {
+#   name        = "db-user"
+#   description = "db-user's user resource"
+#   account_ids = [boundary_account_password.db-user.id]
+#   scope_id    = boundary_scope.org.id
+# }
 
-resource "boundary_role" "db_admin" {
-  name          = "db_admin"
-  description   = "db-admin within Demo Project"
-  principal_ids = [boundary_user.db-user.id]
-  grant_strings = ["id=*;type=*;actions=*"]
-  scope_id      = boundary_scope.project.id
-}
+# resource "boundary_role" "db_admin" {
+#   name          = "db_admin"
+#   description   = "db-admin within Demo Project"
+#   principal_ids = [boundary_user.db-user.id]
+#   grant_strings = ["id=*;type=*;actions=*"]
+#   scope_id      = boundary_scope.project.id
+# }
 
 // TARGETS
 

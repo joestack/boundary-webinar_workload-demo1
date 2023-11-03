@@ -17,17 +17,6 @@ locals {
   boundary_cluster_addr = data.terraform_remote_state.hcp.outputs.boundary_cluster_url
   worker_token          = boundary_worker.controller_led.controller_generated_activation_token
   vault_ca_pub_key      = tls_private_key.signing-key.public_key_openssh
-  
-  #demo_project_id       = boundary_scope.project.id
-  
-  # boundary_cluster_addr = data.terraform_remote_state.platform_services.outputs.boundary_cluster
-  # worker_token          = data.terraform_remote_state.platform_services.outputs.activation_token
-  # demo_org_id           = data.terraform_remote_state.platform_services.outputs.demo_org_id
-  # demo_project_id       = data.terraform_remote_state.platform_services.outputs.demo_project_id
-  # cred_store_static     = data.terraform_remote_state.platform_services.outputs.cred_store_static
-  # cred_store_vault      = data.terraform_remote_state.platform_services.outputs.cred_store_vault
-  # vault_ca_pub_key      = data.terraform_remote_state.platform_services.outputs.ca_public_key
-  # vault_boundary_token  = data.terraform_remote_state.platform_services.outputs.vault_boundary_token
 }
 
 

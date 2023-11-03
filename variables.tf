@@ -80,3 +80,12 @@ variable "network_address_space" {
   default     = "192.168.0.0/16"
 }
 
+variable "mysql_user" {
+  description = "Username to be used to access the mysql DB"
+  default     = "boundary"
+}
+
+variable "mysql_password" {
+  description = "Password to be used to access the mysql DB"
+  default     = "boundary1234!"
+}
