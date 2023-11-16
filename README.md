@@ -15,6 +15,6 @@ It generates a bunch of mysql DBs that can be accessed via Boundary based on sta
 
 The final workload/demo is stacked upon 2 layers.
 
-1st layer provides the required **platform** environments
+1st layer provides the required **platform** environment (github.com/joestackboundary-webinar_platform-hcp)
 
-2nd layer provides and configure the required **platform/services** and the final **workload**
+2nd layer provides and configure the required **platform/services** and the final **workload** (this repo)
