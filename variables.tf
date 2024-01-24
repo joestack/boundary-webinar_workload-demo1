@@ -9,23 +9,23 @@ variable "rs_platform_hcp" {
 }
 
 variable "boundary_global_username" {
-  description = "Terraform boundary_provider Username"
+  description = "Root credential to access Boundary UI and/or Terraform (global scope)"
   }
 
 variable "boundary_global_password" {
-  description = "Terraform boundary_provider Password"
+  description = "Root credential to access Boundary UI and/or Terraform (global scope) "
 }
 
 variable "boundary_project_username" {
-  description = "Terraform boundary_provider Username"
+  description = "project scope credential"
 }
 
 variable "boundary_project_password" {
-  description = "Terraform boundary_provider Password"
+  description = "Project scope credential"
 }
 
 variable "vault_adm_user" {
-  description = "Additinal non-root Username to access Vault"
+  description = "Additinal non-root Username to access Vault with Username/Password"
 }
 
 variable "vault_adm_password" {
@@ -47,17 +47,17 @@ variable "instance_type" {
 }
 
 variable "ssh_user" {
-  description = "default ssh user to get access to an instance"
+  description = "default ssh user to get access to an instance."
   default     = "ubuntu"
 }
 
 variable "pub_key" {
-  description = "the public key to be used to access the bastion host and ansible nodes"
+  description = "the name of the public key that is already uploaded into your specific AWS region to be used to access the bastion host and worker nodes"
   default     = "joestack"
 }
 
 variable "pri_key" {
-  description = "the base64 encoded private key to be used to access the bastion host and ansible nodes"
+  description = "the base64 encoded private part of the pub_key to be used to access the worker nodes from the bastion host (the same key that you use to access the bastion host). "
 }
 
 variable "web_node_count" {
