@@ -63,7 +63,8 @@ resource "boundary_role" "project_admin" {
   name          = "project_admin"
   description   = "Admin role within Demo Project"
   principal_ids = [boundary_user.user.id]
-  grant_strings = ["id=*;type=*;actions=*"]
+  #grant_strings = ["id=*;type=*;actions=*"]
+  grant_strings = ["ids=*;type=*;actions=*"]
   scope_id      = boundary_scope.project.id
 }
 
